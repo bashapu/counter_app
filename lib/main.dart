@@ -50,12 +50,20 @@ void setupWindow() {
 class Counter with ChangeNotifier {
   int value = 0;
   void increment() {
-    value += 1;
-    notifyListeners();
+    if (value < 100) {
+      value += 1;
+      notifyListeners();
+    }
   }
   void decrement() {
-    value -= 1;
-    notifyListeners();
+    if (value > 0) {
+      value -= 1;
+      notifyListeners();
+    }
+  }
+  void setValue(val) {
+    value = val;
+    notifyListeners(); 
   }
 }
 
@@ -97,16 +105,23 @@ class MyHomePage extends StatelessWidget {
                 var counter = context.read<Counter>();
                 counter.increment();
               },
-              child:
-                Text('Increase Age')
+              child: Text('Increase Age')
             ),
             ElevatedButton(
               onPressed: () {
                 var counter = context.read<Counter>();
                 counter.decrement();
               },
-              child:
-                Text('Decrease Age')
+              child: Text('Decrease Age')
+            ),
+            Slider(
+              min: 0,
+              max: 100,
+              value: context.read<Counter>().value.toDouble(),
+              onChanged: (double value) {
+                var counter = context.read<Counter>();
+                counter.setValue(value);
+              },
             ),
           ],
         ),
