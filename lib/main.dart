@@ -49,21 +49,61 @@ void setupWindow() {
 /// _not_ depend on Provider.
 class Counter with ChangeNotifier {
   int value = 0;
+  String message = 'You\'re a child!';
+  Color bgColor = Colors.lightBlue;
+
   void increment() {
     if (value < 100) {
       value += 1;
+      _updateStage();
       notifyListeners();
     }
   }
+
   void decrement() {
     if (value > 0) {
       value -= 1;
+      _updateStage();
       notifyListeners();
     }
   }
-  void setValue(val) {
-    value = val;
-    notifyListeners(); 
+
+  void setValue(double val) {
+    value = val.toInt();
+    _updateStage();
+    notifyListeners();
+  }
+
+  void _updateStage() {
+    if (value <= 12) {
+      message = 'You\'re a child!';
+      bgColor = Colors.lightBlue;
+    } else if (value <= 19) {
+      message = 'Teenager time!';
+      bgColor = Colors.lightGreen;
+    } else if (value <= 30) {
+      message = 'You\'re a young adult';
+      bgColor = Colors.yellowAccent;
+    } else if (value <= 50) {
+      message = 'You\'re an adult now!';
+      bgColor = Colors.orange;
+    } else if (value <= 67) {
+      message = 'You\'re in mid-life!';
+      bgColor = Colors.amber;
+    } else {
+      message = 'Golden years!';
+      bgColor = Colors.grey;
+    }
+  }
+
+  double get progress {
+    if (value <= 33) {
+      return value / 33;
+    } else if (value <= 67) {
+      return (value - 33) / 33;
+    } else {
+      return (value - 67) / 33;
+    }
   }
 }
 
@@ -85,46 +125,59 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Age Counter')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Consumer looks for an ancestor Provider widget
-            // and retrieves its model (Counter, in this case).
-            // Then it uses that model to build widgets, and will trigger
-            // rebuilds if the model is updated.
-            Consumer<Counter>(
-              builder:
-                  (context, counter, child) => Text(
+      // Consumer looks for an ancestor Provider widget
+      // and retrieves its model (Counter, in this case).
+      // Then it uses that model to build widgets, and will trigger
+      // rebuilds if the model is updated.
+      body: Consumer<Counter>(
+        builder: (context, counter, child) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            color: counter.bgColor,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
                     'I am ${counter.value} Years old!',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
+                  Text(
+                    counter.message,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: counter.increment,
+                    child: const Text('Increase Age'),
+                  ),
+                  ElevatedButton(
+                    onPressed: counter.decrement,
+                    child: const Text('Decrease Age'),
+                  ),
+                  Slider(
+                    min: 0,
+                    max: 100,
+                    value: counter.value.toDouble(),
+                    onChanged: counter.setValue,
+                  ),
+                  const SizedBox(height: 20),
+                  LinearProgressIndicator(
+                    value: counter.progress,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      counter.value <= 33
+                          ? Colors.green
+                          : counter.value <= 67
+                              ? Colors.yellow
+                              : Colors.red,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            ElevatedButton(
-              onPressed: () {
-                var counter = context.read<Counter>();
-                counter.increment();
-              },
-              child: Text('Increase Age')
-            ),
-            ElevatedButton(
-              onPressed: () {
-                var counter = context.read<Counter>();
-                counter.decrement();
-              },
-              child: Text('Decrease Age')
-            ),
-            Slider(
-              min: 0,
-              max: 100,
-              value: context.read<Counter>().value.toDouble(),
-              onChanged: (double value) {
-                var counter = context.read<Counter>();
-                counter.setValue(value);
-              },
-            ),
-          ],
-        ),
+          );
+        },
       ),
       // floatingActionButton: FloatingActionButton(
       //   onPressed: () {
