@@ -53,6 +53,10 @@ class Counter with ChangeNotifier {
     value += 1;
     notifyListeners();
   }
+  void decrement() {
+    value -= 1;
+    notifyListeners();
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -60,7 +64,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Age Counter App',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const MyHomePage(),
     );
@@ -72,12 +76,11 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Demo Home Page')),
+      appBar: AppBar(title: const Text('Age Counter')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('You have pushed the button this many times:'),
             // Consumer looks for an ancestor Provider widget
             // and retrieves its model (Counter, in this case).
             // Then it uses that model to build widgets, and will trigger
@@ -85,9 +88,25 @@ class MyHomePage extends StatelessWidget {
             Consumer<Counter>(
               builder:
                   (context, counter, child) => Text(
-                    '${counter.value}',
+                    'I am ${counter.value} Years old!',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                var counter = context.read<Counter>();
+                counter.increment();
+              },
+              child:
+                Text('Increase Age')
+            ),
+            ElevatedButton(
+              onPressed: () {
+                var counter = context.read<Counter>();
+                counter.decrement();
+              },
+              child:
+                Text('Decrease Age')
             ),
           ],
         ),
